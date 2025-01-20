@@ -1,71 +1,60 @@
 import torch
 from transformers import AutoTokenizer
-from model import GPT1
+from model import GPT1  # Ensure GPT1 is correctly implemented
 from config import CONFIG
 
-def load_model():
-    # Load the trained model
+
+def generate_text(model, tokenizer, prompt, max_length=50, device="cpu"):
+    """
+    Generates text using the trained model.
+    """
+    model.eval()
+    input_ids = tokenizer(prompt, return_tensors="pt")["input_ids"].to(device)
+
+    for _ in range(max_length):
+        with torch.no_grad():
+            outputs = model(input_ids)
+            next_token_logits = outputs[:, -1, :]  # Get logits for the last token
+            next_token = torch.argmax(next_token_logits, dim=-1).unsqueeze(0)
+            input_ids = torch.cat([input_ids, next_token], dim=1)
+
+            # Stop generation if the end-of-text token is generated
+            if tokenizer.decode(next_token[0]) == tokenizer.eos_token:
+                break
+
+    return tokenizer.decode(input_ids[0])
+
+
+def main():
+    # Device setup
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained("./tokenizer/")
+
+    # Load trained model
     model = GPT1(
-        vocab_size=CONFIG["vocab_size"],
+        vocab_size=len(tokenizer),
         max_seq_len=CONFIG["max_seq_len"],
         embedding_dim=CONFIG["embedding_dim"],
         num_heads=CONFIG["num_heads"],
         num_layers=CONFIG["num_layers"],
         hidden_dim=CONFIG["hidden_dim"]
-    )
-    model.load_state_dict(torch.load("./gpt1_model.pth"))
-    model.eval()
-    return model
+    ).to(device)
+    model.load_state_dict(torch.load("./gpt1_model.pth", map_location=device))
 
-# def generate_text(prompt, model, tokenizer, max_length=50):
-#     model.eval()
-#     input_ids = tokenizer.encode(prompt, return_tensors="pt")
-#     generated_ids = input_ids
+    # Add special tokens if necessary
+    if tokenizer.pad_token is None:
+        tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
-#     for _ in range(max_length):
-#         with torch.no_grad():
-#             outputs = model(generated_ids)
-#             next_token_logits = outputs[:, -1, :]
-#             next_token_id = torch.argmax(next_token_logits, dim=-1)
-#             generated_ids = torch.cat([generated_ids, next_token_id.unsqueeze(0)], dim=1)
+    # Input prompt for generation
+    prompt = "Once upon a time"
+    print(f"Prompt: {prompt}")
 
-#             # Stop if EOS token is generated
-#             if next_token_id == tokenizer.eos_token_id:
-#                 break
-
-#     generated_text = tokenizer.decode(generated_ids.squeeze().tolist(), skip_special_tokens=True)
-#     return generated_text
-
-import torch.nn.functional as F
-
-def generate_text_with_sampling(prompt, model, tokenizer, max_length=50, temperature=1.0, top_k=50):
-    model.eval()
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-    generated_ids = input_ids
-
-    for _ in range(max_length):
-        with torch.no_grad():
-            outputs = model(generated_ids)
-            next_token_logits = outputs[:, -1, :] / temperature
-            top_k_logits = torch.topk(next_token_logits, top_k).values
-            probabilities = F.softmax(top_k_logits, dim=-1)
-            next_token_id = torch.multinomial(probabilities, num_samples=1)
-            generated_ids = torch.cat([generated_ids, next_token_id.unsqueeze(0)], dim=1)
-
-            # Stop if EOS token is generated
-            if next_token_id == tokenizer.eos_token_id:
-                break
-
-    generated_text = tokenizer.decode(generated_ids.squeeze().tolist(), skip_special_tokens=True)
-    return generated_text
+    # Generate text
+    generated_text = generate_text(model, tokenizer, prompt, max_length=50, device=device)
+    print(f"Generated Text: {generated_text}")
 
 
 if __name__ == "__main__":
-    # Load tokenizer and model
-    tokenizer = AutoTokenizer.from_pretrained("./tokenizer/")
-    model = load_model()
-
-    # Provide a prompt and generate text
-    prompt = "Once upon a time"
-    generated_text = generate_text(prompt, model, tokenizer)
-    print(f"Generated Text:\n{generated_text}")
+    main()
