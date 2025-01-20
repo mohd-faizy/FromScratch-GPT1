@@ -9,7 +9,7 @@ from utils import plot_loss
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
-    
+
     # Load and preprocess the dataset
     raw_dataset = get_dataset()
     texts = raw_dataset["text"][:10000]  # Use a subset for quick training
@@ -36,13 +36,11 @@ def train():
         for step, batch in enumerate(dataloader):
             inputs = batch.to(device)
             labels = batch.to(device)
-
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_fn(outputs.view(-1, CONFIG["vocab_size"]), labels.view(-1))
             loss.backward()
             optimizer.step()
-
             losses.append(loss.item())
             if step % 10 == 0:
                 print(f"Epoch {epoch}, Step {step}, Loss: {loss.item()}")

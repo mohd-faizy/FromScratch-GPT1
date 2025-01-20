@@ -116,7 +116,52 @@ Follow these steps to set up the repository:
 
 * * *
 
-## Running Scripts in VS Code
+## Running Scripts in Google Colab
+
+1. **Clone the Repository**  
+   Run the following command to clone the GitHub repository:  
+
+   ```python
+   !git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
+   ```
+
+2. **Navigate to the Project Directory**  
+   Change the working directory to the cloned repository:  
+
+   ```python
+   import os
+   os.chdir('/content/gpt1-from-scratch')
+   ```
+
+3. **Verify the Current Directory**  
+   Confirm that you are in the correct project directory:  
+
+   ```python
+   !pwd
+   ```
+
+4. **List the Files in the Directory**  
+   Check the contents of the directory:  
+
+   ```python
+   !ls
+   ```
+
+5. **Install Required Packages**  
+   Install all necessary dependencies listed in the `requirements.txt` file:  
+
+   ```python
+   !pip install -r requirements.txt 
+   ```
+
+6. **Run the Training Script**  
+   Start the training process by running the script:  
+
+   ```python
+   !python train.py
+   ```
+
+## Running Scripts in VS-Code
 
 ### Step 1: Open the Repository in VS Code
 
@@ -132,11 +177,11 @@ Follow these steps to set up the repository:
 ### Step 3: Run `train.py`
 
 1. Open the `train.py` file in the editor.
-2. Open the terminal in VS Code (`Ctrl+```).
+2. Open the terminal in VS Code (`Ctrl+`).
 3. Run the training script:
-
-        python train.py
-4. After training completes, the trained model and tokenizer will be saved as:
+   ```python train.py
+   ```
+5. After training completes, the trained model and tokenizer will be saved as:
     - `gpt1_model.pth`
     - `tokenizer/`
 
@@ -144,8 +189,9 @@ Follow these steps to set up the repository:
 
 1. Open the `inference.py` file in the editor.
 2. In the terminal, run:
-
-        python inference.py
+   ```
+   python inference.py
+   ```
 3. Enter a prompt (e.g., `"Once upon a time"`) to see the generated text output.
 
 * * *

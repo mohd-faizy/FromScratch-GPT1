@@ -15,5 +15,5 @@ class TextDataset(Dataset):
         return torch.tensor(encoded["input_ids"], dtype=torch.long)
 
 def get_dataset():
-    dataset = load_dataset("openwebtext", trust_remote_code=True)
+    dataset = load_dataset("imdb")
     return dataset["train"]
