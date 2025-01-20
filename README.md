@@ -96,7 +96,8 @@ Follow these steps to set up the repository:
 
 1. **Clone the Repository:**
    ```
-   git clone -
+   git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
+   gh repo clone mohd-faizy/gpt1-from-scratch
    ```
 2. **Set Up a Virtual Environment (Optional but Recommended):**
    ```
