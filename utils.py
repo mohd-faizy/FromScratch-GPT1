@@ -1,7 +1,13 @@
 import matplotlib.pyplot as plt
-def plot_loss(losses):
-    plt.plot(losses)
+import numpy as np
+
+def plot_loss(losses, window=100):
+    plt.figure(figsize=(10, 5))
+    smoothed = np.convolve(losses, np.ones(window)/window, mode='valid')
+    plt.plot(smoothed)
+    plt.title("Training Loss (Smoothed)")
     plt.xlabel("Steps")
     plt.ylabel("Loss")
-    plt.title("Training Loss Curve")
-    plt.show()
+    plt.grid(True)
+    plt.savefig("training_loss.png")
+    plt.close()

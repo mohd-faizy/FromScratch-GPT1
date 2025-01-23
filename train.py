@@ -1,87 +1,79 @@
 import torch
-from torch.utils.data import DataLoader
-from transformers import AutoTokenizer
-from dataset import TextDataset, get_dataset
-from model import GPT1
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LambdaLR
+from tqdm import tqdm
+from model import GPT
 from config import CONFIG
-from utils import plot_loss
+from dataset import get_dataloader
+from transformers import AutoTokenizer
 
-
-def resize_embeddings(model, tokenizer):
-    """
-    Resizes the embedding layer of the model to match the tokenizer's vocabulary size.
-    """
-    old_embeddings = model.embedding.weight.data
-    new_vocab_size = len(tokenizer)
-    new_embeddings = torch.nn.Embedding(new_vocab_size, old_embeddings.size(1)).to(old_embeddings.device)
-
-    # Copy existing weights into the resized embeddings
-    new_embeddings.weight.data[:old_embeddings.size(0), :] = old_embeddings
-    model.embedding = new_embeddings
-    return model
-
+def get_lr_scheduler(optimizer, warmup_steps, total_steps):
+    def lr_lambda(current_step):
+        if current_step < warmup_steps:
+            return float(current_step) / float(max(1, warmup_steps))
+        return max(0.0, float(total_steps - current_step) / float(max(1, total_steps - warmup_steps)))
+    return LambdaLR(optimizer, lr_lambda)
 
 def train():
+    # Device setup
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # Load tokenizer
+    torch.backends.cuda.matmul.allow_tf32 = True  # Enable TF32 for matmul
+    torch.backends.cudnn.allow_tf32 = True  # Enable TF32 for convolutions
+    
+    # Load components
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
-
-    # Add a padding token if it doesn't exist
-    if tokenizer.pad_token is None:
-        tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-
-    # Load and preprocess the dataset
-    raw_dataset = get_dataset()  # Assumes get_dataset() loads your dataset
-    texts = raw_dataset["text"][:10000]  # Subset for quick training
-    dataset = TextDataset(texts, tokenizer, CONFIG["max_seq_len"])
-    dataloader = DataLoader(dataset, batch_size=CONFIG["batch_size"], shuffle=True)
-
-    # Initialize the model
-    model = GPT1(
-        vocab_size=len(tokenizer),
-        max_seq_len=CONFIG["max_seq_len"],
-        embedding_dim=CONFIG["embedding_dim"],
-        num_heads=CONFIG["num_heads"],
-        num_layers=CONFIG["num_layers"],
-        hidden_dim=CONFIG["hidden_dim"]
-    ).to(device)
-
-    # Resize embeddings
-    model = resize_embeddings(model, tokenizer)
-
-    # Define optimizer and loss function
-    optimizer = torch.optim.AdamW(model.parameters(), lr=CONFIG["learning_rate"])
-    loss_fn = torch.nn.CrossEntropyLoss()
-
+    tokenizer.pad_token = tokenizer.eos_token
+    dataloader = get_dataloader(tokenizer)
+    
+    model = GPT(CONFIG, len(tokenizer)).to(device)
+    
+    # Optimizer with weight decay
+    no_decay = ["bias", "LayerNorm.weight"]
+    params = [
+        {
+            "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+            "weight_decay": CONFIG.weight_decay,
+        },
+        {
+            "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 
+            "weight_decay": 0.0,
+        },
+    ]
+    optimizer = AdamW(params, lr=CONFIG.lr)
+    
+    # Scheduler
+    total_steps = len(dataloader) * CONFIG.epochs
+    scheduler = get_lr_scheduler(optimizer, CONFIG.warmup_steps, total_steps)
+    
+    # Mixed precision
+    scaler = torch.cuda.amp.GradScaler()
+    
     # Training loop
-    losses = []
     model.train()
-    for epoch in range(CONFIG["epochs"]):
-        for step, batch in enumerate(dataloader):
-            inputs = batch["input_ids"].to(device)
-            labels = batch["labels"].to(device)
-
+    for epoch in range(CONFIG.epochs):
+        pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{CONFIG.epochs}")
+        for batch in pbar:
+            inputs = batch['input_ids'].to(device)
+            mask = batch['attention_mask'].to(device)
+            
+            with torch.amp.autocast(device_type='cuda', dtype=torch.bfloat16):
+                outputs = model(inputs, attention_mask=~mask.bool())
+                loss = torch.nn.functional.cross_entropy(
+                    outputs.view(-1, outputs.size(-1)),
+                    inputs.view(-1),
+                    ignore_index=tokenizer.pad_token_id,
+                )
+            
+            scaler.scale(loss).backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), CONFIG.grad_clip)
+            
+            scaler.step(optimizer)
+            scaler.update()
             optimizer.zero_grad()
-            outputs = model(inputs)
-
-            # Compute loss
-            loss = loss_fn(outputs.view(-1, len(tokenizer)), labels.view(-1))
-            loss.backward()
-            optimizer.step()
-            losses.append(loss.item())
-
-            if step % 10 == 0:
-                print(f"Epoch {epoch}, Step {step}, Loss: {loss.item()}")
-
-    # Plot the loss curve
-    plot_loss(losses)
-
-    # Save the model and tokenizer
-    torch.save(model.state_dict(), "./gpt1_model.pth")
+            scheduler.step()
+            
+            pbar.set_postfix(loss=loss.item(), lr=scheduler.get_last_lr()[0])
+    
+    # Save model safely
+    torch.save(model.state_dict(), "./gpt_model.pth", _use_new_zipfile_serialization=True)
     tokenizer.save_pretrained("./tokenizer/")
-    print("Training complete!")
-
-
-if __name__ == "__main__":
-    train()
