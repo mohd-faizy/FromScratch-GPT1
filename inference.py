@@ -75,7 +75,7 @@ def main():
         model.load_state_dict(torch.load("gpt_model.pth", map_location=device, weights_only=True))
         
         # Example dialogue prompt
-        prompt = "Character A: Did you take the key?\nCharacter B:"
+        prompt = "The French Revolution began in 1789 and was a period of radical social and political upheaval. The main causes were:"
         # Generate continuation
         generated = generate(prompt, model, tokenizer, device)
         

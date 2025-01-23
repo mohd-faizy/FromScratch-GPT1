@@ -33,71 +33,54 @@ pip install -r requirements.txt
 ```
 
 
-### For Google Colab 
-
-```python
-# Clone repository and install dependencies
-!git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
-%cd gpt1-from-scratch
-
-# Install optimized dependencies
-!pip install datasets transformers accelerate -q
-
-# Setup matplotlib for Colab display
-!pip install matplotlib > /dev/null
-%matplotlib inline
-
-# Install core dependencies
-pip install -r requirements.txt
-
-# Train the model 
-!python train.py 
-
-# Model inference
-!python inference.py
-```
-
----
-
 ## 🚀 Quick Start
 
 ### Google Colab Workflow
 
 ```python
-# 1. Clone and setup
+# 1. Clone the repository
 !git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
-%cd gpt1-from-scratch
+
+# 2. Change to the project directory
+import os
+os.chdir('/content/gpt1-from-scratch')
+
+# 3. Install required libraries
 !pip install datasets transformers accelerate matplotlib -q
 %matplotlib inline
 
-# 2. Start training (3 epochs example)
+# 4. Train the model with 3 epochs
 !python train.py --epochs 3 --batch_size 32
 
-# 3. Generate text after training
-!python inference.py --prompt "Artificial intelligence" --temperature 0.7
+# 5. Train with default settings
+!python train.py
 
-!python train.py 
-
+# 6. Generate text with default settings
 !python inference.py
+
+# 7. Generate text using the trained model
+!python inference.py --prompt "what is AI?" --temperature 0.7
 ```
 
 ### Local/VS Code Workflow
 
-```bash
-# Train with custom parameters
-python train.py \
-    --batch_size 16 \
-    --max_seq_len 128 \
-    --epochs 10
 
-# Generate text with different settings
-python inference.py \
-    --prompt "The future of AI" \
-    --temperature 0.8 \
-    --top_k 100 \
-    --max_length 200
+```bash
+# Train the model with custom parameters
+python train.py \
+    --batch_size 16 \          # Number of samples per batch
+    --max_seq_len 128 \        # Maximum sequence length
+    --epochs 10                # Number of training epochs
 ```
 
+```bash
+# Generate text with custom settings
+python inference.py \
+    --prompt "The future of AI" \  # Starting text for generation
+    --temperature 0.8 \            # Controls randomness (0.8 = more creative)
+    --top_k 100 \                  # Limits to top 100 likely tokens
+    --max_length 200               # Maximum tokens to generate
+```
 
 ## 📂 Repository Structure
 
@@ -150,7 +133,7 @@ python inference.py \
 python -c "from utils import plot_loss; plot_loss()"
 ```
 
-![Training Loss Curve](training_loss.png)
+<!-- ![Training Loss Curve](training_loss.png) -->
 
 ---
 

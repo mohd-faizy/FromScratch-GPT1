@@ -18,7 +18,7 @@ CONFIG = SimpleNamespace(
     batch_size=8,       # Number of samples processed in one training step
     lr=2e-4,            # Learning rate - how quickly the model updates its weights
     weight_decay=0.1,   # Regularization to prevent overfitting (penalize large weights)
-    epochs=200,         # Number of complete passes through the training data
+    epochs=150,         # Number of complete passes through the training data
     warmup_steps=100,   # Gradually increase learning rate at start of training
     grad_clip=1.0,      # Prevent exploding gradients by clipping their maximum value
 
