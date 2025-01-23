@@ -133,7 +133,7 @@ python inference.py \
 python -c "from utils import plot_loss; plot_loss()"
 ```
 
-<!-- ![Training Loss Curve](training_loss.png) -->
+![Training Loss Curve](training_loss.png)
 
 ---
 
