@@ -7,6 +7,7 @@ from model import GPT
 from config import CONFIG
 from dataset import get_dataloader
 from transformers import AutoTokenizer
+from utils import plot_loss  # Added import
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,6 +34,9 @@ def train():
         total_steps = len(dataloader) * CONFIG.epochs
         scheduler = get_lr_scheduler(optimizer, total_steps)
 
+        # Loss tracking
+        all_losses = []  # Added loss collection
+        
         model.train()
         for epoch in range(CONFIG.epochs):
             pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{CONFIG.epochs}", disable=(epoch+1) % 10 != 0)
@@ -49,6 +53,9 @@ def train():
                     ignore_index=tokenizer.pad_token_id,
                 )
                 
+                # Store loss
+                all_losses.append(loss.item())  # Collect losses
+                
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), CONFIG.grad_clip)
                 optimizer.step()
@@ -57,9 +64,12 @@ def train():
                 
                 pbar.set_postfix(loss=f"{loss.item():.4f}", lr=f"{scheduler.get_last_lr()[0]:.2e}")
 
-            # Log every 10 epochs
             if (epoch + 1) % 10 == 0:
                 logging.info(f"Epoch {epoch+1}/{CONFIG.epochs} completed")
+
+        # Plot after training
+        plot_loss(all_losses)  # Generate loss plot
+        logging.info("Training loss plot saved to training_loss.png")
 
         torch.save(model.state_dict(), "gpt_model.pth")
         tokenizer.save_pretrained("./tokenizer")

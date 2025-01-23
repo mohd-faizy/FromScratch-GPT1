@@ -38,7 +38,7 @@ def main():
         model = GPT(CONFIG, len(tokenizer)).to(device)
         model.load_state_dict(torch.load("gpt_model.pth", map_location=device, weights_only=True))
         
-        prompt = "The quick brown fox..."
+        prompt = "As the clock struck midnight, the old library"
         generated = generate(prompt, model, tokenizer, device)
         print(f"\nPrompt: {prompt}\nGenerated: {generated[len(prompt):]}")
         

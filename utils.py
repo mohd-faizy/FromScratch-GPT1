@@ -11,3 +11,10 @@ def plot_loss(losses, window=50):
     plt.grid(True)
     plt.savefig("training_loss.png")
     plt.close()
+    
+    # For Colab display
+    try:
+        from IPython import display
+        display.display(display.Image('training_loss.png'))
+    except:
+        pass

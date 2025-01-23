@@ -12,7 +12,7 @@ CONFIG = SimpleNamespace(
     batch_size=8,
     lr=2e-4,
     weight_decay=0.1,
-    epochs=100,
+    epochs=200,
     warmup_steps=100,
     grad_clip=1.0,
     
