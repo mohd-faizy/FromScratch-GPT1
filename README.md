@@ -1,237 +1,165 @@
-# GPT-1 from Scratch Repository Guide
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red?logo=pytorch)
+![License](https://img.shields.io/badge/License-MIT-green)
+[![author](https://img.shields.io/badge/author-mohd--faizy-red)](https://github.com/mohd-faizy)
+![Maintained](https://img.shields.io/maintenance/yes/2025)
 
-## Repository Structure
 
-The repository is structured as follows:
+
+*A minimal PyTorch implementation of GPT-1 for educational purposes, optimized for Google Colab and CPU training*
+
+
+## 🛠️ Installation
+
+### Basic Installation
+```bash
+# Clone repository
+git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
+cd gpt1-from-scratch
+
+# Install core dependencies
+pip install -r requirements.txt
+```
+
+### For Google Colab Users
+
+```python
+!git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
+%cd gpt1-from-scratch
+
+# Install optimized dependencies (-q for quiet mode)
+!pip install datasets transformers accelerate -q
+```
+
+## 📦 requirements.txt
+
+```txt
+torch==2.0.1
+transformers==4.30.2
+datasets==2.14.4
+tqdm==4.65.0
+matplotlib==3.7.1
+accelerate==0.21.0
+```
+
+## 🚀 Quick Start
+
+### 1. Train the Model
+
+```bash
+python train.py \
+    --batch_size 16 \
+    --max_seq_len 128 \
+    --epochs 3
+```
+
+### 2. Generate Text
+
+```bash
+python inference.py \
+    --prompt "Artificial intelligence" \
+    --temperature 0.7 \
+    --top_k 50
+```
+
+## 📂 Repository Structure
+
 ```
 .
-├── config.py          # Configuration file for model hyperparameters
-├── dataset.py         # Dataset preparation and loading logic
-├── inference.py       # Script for generating text using the trained model
-├── model.py           # Definition of the GPT-1 architecture
-├── requirements.txt   # List of Python dependencies
-├── train.py           # Training script for the GPT-1 model
-├── utils.py           # Utility functions (e.g., plotting loss)
-├── tokenizer/         # Directory where the trained tokenizer is saved
-├── gpt1_model.pth     # File where the trained model is saved (after training)
-└── venv/              # Virtual environment directory (optional, if used)
+├── 📄 config.py          # Model configuration ⚙️
+├── 📄 dataset.py         # Data pipeline 🗂️
+├── 📄 inference.py       # Text generation 💬
+├── 📄 model.py           # GPT architecture 🧩
+├── 📄 requirements.txt   # Dependencies 📦
+├── 📄 train.py           # Training script 🏋️
+├── 📄 utils.py           # Visualization 📊
+├── 📁 tokenizer/         # Saved tokenizer
+├── 📄 gpt_model.pth      # Trained weights
+└── 📄 README.md          # Documentation
 ```
 
-* * *
+## 🔧 Key Features
 
-## File Descriptions
+### Training Configuration (`config.py`)
 
-### 1. **`config.py`**
+```python
+CONFIG = SimpleNamespace(
+    n_layer=4,              # Transformer layers
+    n_head=4,               # Attention heads
+    d_model=256,            # Embedding dimension
+    batch_size=16,          # Adjust for your hardware
+    lr=2e-4,                # Learning rate
+    warmup_steps=100,       # LR scheduling
+)
+```
 
-Contains a dictionary (`CONFIG`) with all the configurable parameters for training the GPT-1 model, such as:
+### Text Generation (`inference.py`)
 
-- Vocabulary size
-- Embedding dimensions
-- Number of transformer layers and heads
-- Learning rate and batch size
+```python
+def generate(
+    prompt: str,
+    temperature: float = 0.7,  # Control randomness
+    top_k: int = 50,           # Top-k sampling
+    max_length: int = 100      # Max generation length
+):
+    # Generation logic
+```
 
-### 2. **`dataset.py`**
+## 📊 Monitoring Training
 
-Defines logic to:
+```python
+# Plot smoothed training loss
+python -c "from utils import plot_loss; plot_loss()"
+```
 
-- Load and preprocess the dataset (`get_dataset()` function).
-- Convert text into tokenized input sequences (`TextDataset` class).
+## 🚨 Troubleshooting
 
-### 3. **`model.py`**
+| Issue                        | Solution                          |
+|------------------------------|-----------------------------------|
+| `DatasetNotFoundError`       | Verify dataset name in config.py  |
+| `Tokenizer not found`        | Run train.py before inference     |
+| `CUDA out of memory`         | Reduce batch size                 |
+| `NaN loss values`            | Lower learning rate               |
+| `[PAD] tokens in output`     | Adjust temperature/top_k          |
 
-Contains the implementation of the GPT-1 architecture, including:
+## 🖥️ Google Colab Workflow
 
-- Embedding layers
-- Transformer blocks
-- Output layers for text generation.
+```python
+# Full setup & training
+!git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
+%cd gpt1-from-scratch
+!pip install datasets transformers accelerate -q
+!python train.py --epochs 3 --batch_size 32
+```
 
-### 4. **`train.py`**
+## 📚 Resources
 
-Main script for training the GPT-1 model. It includes:
+- [Original GPT Paper](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- [PyTorch Documentation](https://pytorch.org/docs/stable/index.html)
+- [HuggingFace Course](https://huggingface.co/learn/nlp-course)
 
-- Loading the dataset.
-- Initializing the model, optimizer, and loss function.
-- Training loop.
-- Saving the trained model and tokenizer.
+---
 
-### 5. **`inference.py`**
+## ⚖ ➤ License
 
-Script for generating text using the trained model. It:
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-- Loads the saved model and tokenizer.
-- Takes a user-defined prompt as input.
-- Outputs the generated text.
+## ❤️ Support
 
-### 6. **`utils.py`**
+If you find this repository helpful, show your support by starring it! For questions or feedback, reach out on [Twitter(`X`)](https://twitter.com/F4izy).
 
-Contains helper functions such as:
+## 🔗Connect with me
 
-- `plot_loss`: Plots the training loss curve for visualization.
+➤ If you have questions or feedback, feel free to reach out!!!
 
-### 7. **`requirements.txt`**
+[<img align="left" src="https://cdn4.iconfinder.com/data/icons/social-media-icons-the-circle-set/48/twitter_circle-512.png" width="32px"/>][twitter]
+[<img align="left" src="https://cdn-icons-png.flaticon.com/512/145/145807.png" width="32px"/>][linkedin]
+[<img align="left" src="https://cdn-icons-png.flaticon.com/512/2626/2626299.png" width="32px"/>][Portfolio]
 
-Specifies all the Python packages required to run the code. Examples include:
+[twitter]: https://twitter.com/F4izy
+[linkedin]: https://www.linkedin.com/in/mohd-faizy/
+[Portfolio]: https://ai.stackexchange.com/users/36737/faizy?tab=profile
 
-- `torch` for PyTorch
-- `transformers` for tokenizer and model utilities
-- `datasets` for loading datasets
+---
 
-### 8. **`tokenizer/`**
-
-Directory where the trained tokenizer is saved after running `train.py`. It contains files like:
-
-- `tokenizer_config.json`
-- `vocab.json`
-- `merges.txt`
-
-### 9. **`gpt1_model.pth`**
-
-File where the trained model's state dictionary is saved after training.
-
-* * *
-
-## Installation Instructions
-
-Follow these steps to set up the repository:
-
-1. **Clone the Repository:**
-   ```
-   git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
-   gh repo clone mohd-faizy/gpt1-from-scratch
-   ```
-2. **Set Up a Virtual Environment (Optional but Recommended):**
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Linux/Mac
-   venv\Scripts\activate    # On Windows
-   ```
-3. **Install Dependencies:** Use the `requirements.txt` file to install all required Python packages:
-   ```
-   pip install -r requirements.txt
-   ```
-4. **Verify Installation:** Check that all required libraries are installed by running:
-   ```
-   python -m torch --versionpython -m transformers --version
-   ```
-
-* * *
-
-## Running Scripts in Google Colab
-
-1. **Clone the Repository**  
-   Run the following command to clone the GitHub repository:  
-
-   ```python
-   !git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
-   ```
-
-2. **Navigate to the Project Directory**  
-   Change the working directory to the cloned repository:  
-
-   ```python
-   import os
-   os.chdir('/content/gpt1-from-scratch')
-   ```
-
-3. **Verify the Current Directory**  
-   Confirm that you are in the correct project directory:  
-
-   ```python
-   !pwd
-   ```
-
-4. **List the Files in the Directory**  
-   Check the contents of the directory:  
-
-   ```python
-   !ls
-   ```
-
-5. **Install Required Packages**  
-   Install all necessary dependencies listed in the `requirements.txt` file:  
-
-   ```python
-   !pip install -r requirements.txt 
-   ```
-
-6. **Run the Training Script**  
-   Start the training process by running the script:  
-
-   ```python
-   !python train.py
-   ```
-
-## Running Scripts in VS-Code
-
-### Step 1: Open the Repository in VS Code
-
-1. Open VS Code and select **File &gt; Open Folder**.
-2. Navigate to the cloned repository and open it.
-
-### Step 2: Configure the Python Environment
-
-1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) to open the command palette.
-2. Search for and select **Python: Select Interpreter**.
-3. Choose the virtual environment (`venv`) if you created one.
-
-### Step 3: Run `train.py`
-
-1. Open the `train.py` file in the editor.
-2. Open the terminal in VS Code (`Ctrl+`).
-3. Run the training script:
-   ```python train.py
-   ```
-5. After training completes, the trained model and tokenizer will be saved as:
-    - `gpt1_model.pth`
-    - `tokenizer/`
-
-### Step 4: Run `inference.py`
-
-1. Open the `inference.py` file in the editor.
-2. In the terminal, run:
-   ```
-   python inference.py
-   ```
-3. Enter a prompt (e.g., `"Once upon a time"`) to see the generated text output.
-
-* * *
-
-## Example Workflow
-
-1. Clone the repository and set up the environment.
-2. Run `train.py` to train the model:
-
-        python train.py
-
-    Output:
-
-        Epoch 0, Step 0, Loss: 5.678...Model saved to ./gpt1_model.pthTokenizer saved to ./tokenizer/
-3. Run `inference.py` to generate text:
-
-        python inference.py
-
-    Output:
-
-        Enter your prompt: Once upon a timeGenerated Text: Once upon a time, in a distant kingdom...
-
-* * *
-
-## Troubleshooting
-
-- **Error: `tokenizer not found`**
-
-  - Ensure you run `train.py` first to save the tokenizer and model.
-- **Error: Missing dependencies**
-
-  - Check that all dependencies are installed using `pip install -r requirements.txt`.
-- **Error: CUDA not available**
-
-  - Ensure your system has a compatible GPU and CUDA installed. Otherwise, training will default to the CPU, which is slower.
-
-* * *
-
-## Additional Notes
-
-- You can modify `config.py` to change model parameters like the number of layers or training epochs.
-- For larger datasets, increase the dataset size in `train.py` (e.g., remove `[:10000]` from `texts`).
+<img src="https://github-readme-stats.vercel.app/api?username=mohd-faizy&show_icons=true" width=380px height=200px />
 
