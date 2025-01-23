@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_loss(losses, window=100):
+def plot_loss(losses, window=50):
     plt.figure(figsize=(10, 5))
     smoothed = np.convolve(losses, np.ones(window)/window, mode='valid')
     plt.plot(smoothed)

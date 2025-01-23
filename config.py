@@ -2,25 +2,26 @@ from types import SimpleNamespace
 
 CONFIG = SimpleNamespace(
     # Architecture
-    n_layer=6,                # Reduced layers for Colab
-    n_head=6,                 # Fewer heads
-    d_model=512,              # Reduced embedding dim
-    d_ff=2048,                # Feedforward dimension
-    max_seq_len=256,          # Increased but manageable
+    n_layer=4,                # Reduced layers for Colab/CPU
+    n_head=4,
+    d_model=256,              # Embedding dimension
+    d_ff=1024,                # Feedforward dimension
+    max_seq_len=128,          # Sequence length
     
     # Training
-    batch_size=16,            # Optimized for Colab memory
-    lr=3e-4,                  # Slightly higher for faster convergence
-    weight_decay=0.1,         # Regularization
-    epochs=10,                # Fewer epochs with better data
-    warmup_steps=1000,        # Learning rate warmup
-    grad_clip=1.0,            # Gradient clipping
+    batch_size=8,
+    lr=2e-4,
+    weight_decay=0.1,
+    epochs=10,                 # Start with 10 for testing
+    warmup_steps=100,
+    grad_clip=1.0,
     
-    # Data
-    dataset_name="wikitext-103",  # Larger dataset
-    subset_size=5000,         # Manageable subset for Colab
+    # Dataset
+    dataset_name="wikitext",
+    dataset_config="wikitext-2-raw-v1",  # Verified dataset
+    subset_size=500,          # Reduced subset
     
     # Generation
-    temperature=0.7,          # Sampling temperature
-    top_k=50,                 # Top-k sampling
+    temperature=0.7,
+    top_k=50,
 )

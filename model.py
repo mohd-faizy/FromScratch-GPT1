@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import math
 
 class GPT(nn.Module):
     def __init__(self, config, vocab_size):
@@ -22,30 +21,29 @@ class GPT(nn.Module):
         ])
         
         self.ln_f = nn.LayerNorm(config.d_model)
-        self.head = nn.Linear(config.d_model, vocab_size, bias=False)
+        self.head = nn.Linear(config.d_model, vocab_size)
         
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
-        if isinstance(module, nn.Linear):
+        if isinstance(module, (nn.Linear, nn.Embedding)):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            if module.bias is not None:
+            if isinstance(module, nn.Linear) and module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, nn.Embedding):
-            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            
+                
     def forward(self, x, attention_mask=None):
         B, T = x.size()
+        device = x.device
+        
+        # Create causal mask
+        mask = torch.triu(torch.ones(T, T, device=device), diagonal=1).bool()
+        
         tok_emb = self.tok_emb(x)
         pos_emb = self.pos_emb[:, :T, :]
         x = self.drop(tok_emb + pos_emb)
         
-        # Create causal mask
-        mask = nn.Transformer.generate_square_subsequent_mask(T).to(x.device)
-        
         for block in self.blocks:
-            x = block(x, mask=mask, src_key_padding_mask=attention_mask)
+            x = block(x, src_mask=mask, src_key_padding_mask=attention_mask)
             
         x = self.ln_f(x)
-        logits = self.head(x)
-        return logits
+        return self.head(x)
