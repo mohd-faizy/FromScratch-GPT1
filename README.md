@@ -11,6 +11,7 @@
 ## 🛠️ Installation
 
 ### For VS Code/Local Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/mohd-faizy/gpt1-from-scratch.git
@@ -23,9 +24,16 @@ source gpt-env/bin/activate  # Linux/Mac
 
 # Install core dependencies
 pip install -r requirements.txt
+
+# Train the model 
+!python train.py 
+
+# Model inference
+!python inference.py
 ```
 
-### For Google Colab Users
+
+### For Google Colab 
 
 ```python
 # Clone repository and install dependencies
@@ -39,8 +47,13 @@ pip install -r requirements.txt
 !pip install matplotlib > /dev/null
 %matplotlib inline
 
+# Install core dependencies
+pip install -r requirements.txt
+
+# Train the model 
 !python train.py 
 
+# Model inference
 !python inference.py
 ```
 
@@ -85,20 +98,6 @@ python inference.py \
     --max_length 200
 ```
 
----
-
-## 📦 requirements.txt
-
-```txt
-torch==2.0.1
-transformers==4.30.2
-datasets==2.14.4
-tqdm==4.65.0
-matplotlib==3.7.1
-accelerate==0.21.0
-```
-
----
 
 ## 📂 Repository Structure
 
@@ -115,8 +114,6 @@ accelerate==0.21.0
 ├── 📄 gpt_model.pth      # Trained weights
 └── 📄 README.md          # Documentation
 ```
-
----
 
 ## 🖥️ Execution Guide
 
