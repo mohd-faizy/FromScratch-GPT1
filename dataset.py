@@ -18,7 +18,7 @@ class GPTDataset(Dataset):
             text,
             max_length=self.max_length,
             truncation=True,
-            padding=False,
+            padding='max_length',  # Fixed padding
             return_tensors=None,
         )
         return {
@@ -47,5 +47,5 @@ def get_dataloader(tokenizer):
             return_tensors='pt',
         ),
         shuffle=True,
-        num_workers=0  # Essential for Windows
+        num_workers=0
     )

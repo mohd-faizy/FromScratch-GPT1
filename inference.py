@@ -17,8 +17,13 @@ def generate(prompt, model, tokenizer, device, max_length=50):
     
     for _ in range(max_length):
         outputs = model(inputs.input_ids)
-        next_token = torch.argmax(outputs[:, -1, :], dim=-1)
-        inputs.input_ids = torch.cat([inputs.input_ids, next_token.unsqueeze(-1)], dim=-1)
+        logits = outputs[:, -1, :] / CONFIG.temperature
+        values, _ = torch.topk(logits, CONFIG.top_k)
+        logits[logits < values[:, -1]] = -float('Inf')
+        probs = torch.nn.functional.softmax(logits, dim=-1)
+        next_token = torch.multinomial(probs, num_samples=1)
+        
+        inputs.input_ids = torch.cat([inputs.input_ids, next_token], dim=-1)
         
         if next_token == tokenizer.eos_token_id:
             break
@@ -31,7 +36,7 @@ def main():
         tokenizer = AutoTokenizer.from_pretrained("./tokenizer")
         
         model = GPT(CONFIG, len(tokenizer)).to(device)
-        model.load_state_dict(torch.load("gpt_model.pth", map_location=device))
+        model.load_state_dict(torch.load("gpt_model.pth", map_location=device, weights_only=True))
         
         prompt = "The quick brown fox..."
         generated = generate(prompt, model, tokenizer, device)

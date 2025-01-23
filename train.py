@@ -22,7 +22,6 @@ def train():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logging.info(f"Using device: {device}\nConfig: {vars(CONFIG)}")
 
-        # Initialize components
         tokenizer = AutoTokenizer.from_pretrained("gpt2")
         tokenizer.pad_token = tokenizer.eos_token
         dataloader = get_dataloader(tokenizer)
@@ -30,23 +29,23 @@ def train():
         model = GPT(CONFIG, len(tokenizer)).to(device)
         logging.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
-        # Optimizer setup
         optimizer = AdamW(model.parameters(), lr=CONFIG.lr, weight_decay=CONFIG.weight_decay)
         total_steps = len(dataloader) * CONFIG.epochs
         scheduler = get_lr_scheduler(optimizer, total_steps)
 
-        # Training loop
         model.train()
         for epoch in range(CONFIG.epochs):
-            pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{CONFIG.epochs}")
+            pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{CONFIG.epochs}", disable=(epoch+1) % 10 != 0)
             for batch in pbar:
                 inputs = batch['input_ids'].to(device)
                 mask = batch['attention_mask'].to(device)
                 
                 outputs = model(inputs, attention_mask=~mask.bool())
+                shifted_outputs = outputs[:, :-1, :].contiguous().view(-1, outputs.size(-1))
+                shifted_targets = inputs[:, 1:].contiguous().view(-1)
                 loss = torch.nn.functional.cross_entropy(
-                    outputs.view(-1, outputs.size(-1)),
-                    inputs.view(-1),
+                    shifted_outputs,
+                    shifted_targets,
                     ignore_index=tokenizer.pad_token_id,
                 )
                 
@@ -58,7 +57,10 @@ def train():
                 
                 pbar.set_postfix(loss=f"{loss.item():.4f}", lr=f"{scheduler.get_last_lr()[0]:.2e}")
 
-        # Save model
+            # Log every 10 epochs
+            if (epoch + 1) % 10 == 0:
+                logging.info(f"Epoch {epoch+1}/{CONFIG.epochs} completed")
+
         torch.save(model.state_dict(), "gpt_model.pth")
         tokenizer.save_pretrained("./tokenizer")
         logging.info("Training completed!")
